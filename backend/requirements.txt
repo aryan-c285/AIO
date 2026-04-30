@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+PyMuPDF
+pikepdf
+Pillow
+python-docx
+openpyxl
+qrcode[pil]
+python-dotenv
