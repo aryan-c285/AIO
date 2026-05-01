@@ -1,10 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
-PyMuPDF
+PyMuPDF==1.25.4
 pikepdf
 Pillow
 python-docx
 openpyxl
 qrcode[pil]
-python-dotenv

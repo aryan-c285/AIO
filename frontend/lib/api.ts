@@ -5,6 +5,7 @@ import axios, { type AxiosInstance } from "axios";
  */
 const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
+  timeout: 120_000, // 2 min — Render free-tier cold starts can take 30-50s
 });
 
 /**

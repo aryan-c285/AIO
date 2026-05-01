@@ -3,6 +3,8 @@ AIO Toolkit — FastAPI Backend
 Main application entry point.
 """
 
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,14 +17,20 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS — allow the Next.js dev server
+# CORS — allow the Next.js dev server + production Vercel URL
 # ---------------------------------------------------------------------------
+_origins = ["http://localhost:3000"]
+_extra = os.getenv("ALLOWED_ORIGINS", "")  # comma-separated extra origins
+if _extra:
+    _origins.extend([o.strip() for o in _extra.split(",") if o.strip()])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 # ---------------------------------------------------------------------------
@@ -37,3 +45,8 @@ app.include_router(tools.router, prefix="/api/tools", tags=["Developer & Everyda
 @app.get("/")
 async def root():
     return {"message": "AIO Toolkit API is running"}
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
