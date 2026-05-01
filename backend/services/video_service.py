@@ -29,6 +29,22 @@ _BASE_OPTS: dict[str, Any] = {
 }
 
 
+def _build_opts(extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Compose yt-dlp options and inject cookies if available."""
+    opts = {**_BASE_OPTS}
+    cookiefile = os.getenv("YTDLP_COOKIES_FILE")
+    if cookiefile:
+        if not os.path.exists(cookiefile):
+            raise RuntimeError(
+                f"YTDLP_COOKIES_FILE is set to '{cookiefile}' but that file does not exist. "
+                "Update the path or remove the env var."
+            )
+        opts["cookiefile"] = cookiefile
+    if extra:
+        opts.update(extra)
+    return opts
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -79,13 +95,21 @@ def get_video_info(url: str) -> dict:
     dict with keys: title, thumbnail, duration, formats
         Each format entry: {format_id, label, filesize, type, ext}
     """
-    opts = {
-        **_BASE_OPTS,
+    opts = _build_opts({
         "skip_download": True,
-    }
+    })
 
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+    except yt_dlp.utils.DownloadError as exc:
+        message = str(exc)
+        if "Sign in to confirm" in message or "confirm you\u2019re not a bot" in message:
+            raise ValueError(
+                "This YouTube video requires sign-in or cookies. "
+                "Deploy with YTDLP_COOKIES_FILE set or try a different URL."
+            )
+        raise
 
     if info is None:
         raise ValueError("Could not extract video information from this URL.")
@@ -182,7 +206,7 @@ def download_video(
         The caller is responsible for deleting it after streaming.
     """
     # Fetch minimal info to build filename
-    info_opts = {**_BASE_OPTS, "skip_download": True}
+    info_opts = _build_opts({"skip_download": True})
     with yt_dlp.YoutubeDL(info_opts) as ydl:
         info = ydl.extract_info(url, download=False)
 
@@ -211,14 +235,13 @@ def download_video(
             )
         format_expr = f"{format_id}+bestaudio/best"
 
-    dl_opts = {
-        **_BASE_OPTS,
+    dl_opts = _build_opts({
         "format": format_expr,
         "outtmpl": out_template,
         "max_filesize": MAX_FILESIZE,
         # Merge if needed (requires ffmpeg)
         "merge_output_format": ext if ext in ("mp4", "mkv", "webm") else "mp4",
-    }
+    })
 
     with yt_dlp.YoutubeDL(dl_opts) as ydl:
         ydl.download([url])

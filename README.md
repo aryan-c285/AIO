@@ -62,6 +62,28 @@ Create `frontend/.env.local` (already included):
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
+For the video downloader, some YouTube URLs require authenticated cookies to work. Set this env var in the backend environment if you want the deployed service to support those videos:
+
+```env
+YTDLP_COOKIES_FILE=/path/to/youtube_cookies.txt
+```
+
+If you deploy to Render, add `YTDLP_COOKIES_FILE` as a backend environment variable and point it to the cookies file path available to the container.
+
+### YouTube cookies for restricted videos
+
+If a video requires sign-in or bot verification, export your YouTube cookies and save them to a file. Then deploy with `YTDLP_COOKIES_FILE` pointing to that file.
+
+Example export commands:
+
+- Using `yt-dlp` locally:
+  ```bash
+  yt-dlp --cookies-from-browser chrome "https://www.youtube.com/watch?v=VIDEO_ID" --skip-download
+  ```
+- Or export cookies manually from your browser and place them in a text file.
+
+This repo supports the env var and will pass the cookie file to `yt-dlp` when present.
+
 ## Tech Stack
 
 | Layer     | Technology                                     |

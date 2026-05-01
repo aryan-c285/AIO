@@ -39,6 +39,17 @@ export default function VideoDownloaderPage() {
   const [error, setError] = useState<string | null>(null);
   const [downloadDone, setDownloadDone] = useState(false);
 
+  const isCookieError = useMemo(() => {
+    if (!error) return false;
+    const normalized = error.toLowerCase();
+    return (
+      normalized.includes("cookies") ||
+      normalized.includes("sign-in") ||
+      normalized.includes("sign in") ||
+      normalized.includes("not a bot")
+    );
+  }, [error]);
+
   /* ---------- Filtered formats based on toggle ---------- */
   const filteredFormats = useMemo(() => {
     if (!info) return [];
@@ -170,6 +181,10 @@ export default function VideoDownloaderPage() {
             terms of service of the platform you are downloading from. We do not
             store any files.
           </p>
+          <p className="mt-2 text-sm text-amber-200/90">
+            Some YouTube videos require signed-in cookies. If a video fails with
+            a sign-in error, deploy your backend with `YTDLP_COOKIES_FILE` set.
+          </p>
         </div>
 
         {/* -------- URL Input -------- */}
@@ -213,7 +228,14 @@ export default function VideoDownloaderPage() {
         {/* -------- Error -------- */}
         {error && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-            {error}
+            <p>{error}</p>
+            {isCookieError && (
+              <p className="mt-2 text-sm text-amber-100">
+                This video likely requires YouTube sign-in cookies. Deploy the
+                backend with `YTDLP_COOKIES_FILE` set to a valid cookies file,
+                or try a publicly accessible video.
+              </p>
+            )}
           </div>
         )}
 

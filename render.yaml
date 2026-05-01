@@ -10,4 +10,6 @@ services:
     envVars:
       - key: ALLOWED_ORIGINS
         value: https://aio-toolkit.vercel.app
+      - key: YTDLP_COOKIES_FILE
+        value: ""
     plan: free
