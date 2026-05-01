@@ -62,27 +62,42 @@ Create `frontend/.env.local` (already included):
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-For the video downloader, some YouTube URLs require authenticated cookies to work. Set this env var in the backend environment if you want the deployed service to support those videos:
+For the video downloader, some YouTube URLs require authenticated cookies to work. Set one of these backend environment variables for restricted videos:
 
 ```env
 YTDLP_COOKIES_FILE=/path/to/youtube_cookies.txt
 ```
 
-If you deploy to Render, add `YTDLP_COOKIES_FILE` as a backend environment variable and point it to the cookies file path available to the container.
+or
 
-### YouTube cookies for restricted videos
+```env
+YTDLP_COOKIES_B64=<base64-encoded-cookie-file-content>
+```
 
-If a video requires sign-in or bot verification, export your YouTube cookies and save them to a file. Then deploy with `YTDLP_COOKIES_FILE` pointing to that file.
+`YTDLP_COOKIES_FILE` should point to a cookies file inside the deployed container. `YTDLP_COOKIES_B64` is safer for many cloud hosts because it stores the cookie file content as a base64 secret.
 
-Example export commands:
+If you deploy to Render:
 
-- Using `yt-dlp` locally:
+1. Export your YouTube cookies locally using `yt-dlp` or your browser.
+2. Convert the cookie file to base64:
+   ```bash
+   base64 -w 0 youtube_cookies.txt
+   ```
+3. Add `YTDLP_COOKIES_B64` as an environment variable in Render with that encoded value.
+
+If your host does not support multiline env vars, use `YTDLP_COOKIES_B64` instead of `YTDLP_COOKIES_FILE`.
+
+### How to export YouTube cookies
+
+- Using `yt-dlp` directly:
   ```bash
-  yt-dlp --cookies-from-browser chrome "https://www.youtube.com/watch?v=VIDEO_ID" --skip-download
+  yt-dlp --cookies-from-browser chrome --skip-download "https://www.youtube.com/watch?v=VIDEO_ID"
   ```
-- Or export cookies manually from your browser and place them in a text file.
+- Alternatively, export cookies from your browser to a text file.
 
-This repo supports the env var and will pass the cookie file to `yt-dlp` when present.
+After setting the env variable and redeploying, the backend should be able to use the cookies with yt-dlp and download videos that previously required sign-in.
+
+> Note: This only works for videos accessible with those cookies. Some content may still fail due to additional restrictions or terms of service.
 
 ## Tech Stack
 

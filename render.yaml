@@ -12,4 +12,6 @@ services:
         value: https://aio-toolkit.vercel.app
       - key: YTDLP_COOKIES_FILE
         value: ""
+      - key: YTDLP_COOKIES_B64
+        value: ""
     plan: free

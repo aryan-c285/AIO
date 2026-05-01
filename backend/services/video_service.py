@@ -29,15 +29,46 @@ _BASE_OPTS: dict[str, Any] = {
 }
 
 
+def _write_cookie_file_from_env() -> str | None:
+    """Write cookies from env content/b64 to a temp file and return its path."""
+    cookiefile = os.getenv("YTDLP_COOKIES_FILE")
+    if cookiefile:
+        return cookiefile
+
+    cookie_content = os.getenv("YTDLP_COOKIES_CONTENT")
+    cookie_b64 = os.getenv("YTDLP_COOKIES_B64")
+    if not cookie_content and not cookie_b64:
+        return None
+
+    if cookie_b64:
+        import base64
+
+        try:
+            cookie_content = base64.b64decode(cookie_b64).decode("utf-8")
+        except Exception as exc:
+            raise RuntimeError(
+                "YTDLP_COOKIES_B64 is set but could not be decoded. "
+                "Verify the base64 value and try again."
+            ) from exc
+
+    temp_path = os.path.join(tempfile.gettempdir(), "yt-dlp-cookies.txt")
+    with open(temp_path, "w", encoding="utf-8") as cookiefile:
+        cookiefile.write(cookie_content or "")
+    return temp_path
+
+
+COOKIEFILE_PATH = _write_cookie_file_from_env()
+
+
 def _build_opts(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     """Compose yt-dlp options and inject cookies if available."""
     opts = {**_BASE_OPTS}
-    cookiefile = os.getenv("YTDLP_COOKIES_FILE")
+    cookiefile = COOKIEFILE_PATH
     if cookiefile:
         if not os.path.exists(cookiefile):
             raise RuntimeError(
-                f"YTDLP_COOKIES_FILE is set to '{cookiefile}' but that file does not exist. "
-                "Update the path or remove the env var."
+                f"Cookies file path '{cookiefile}' was configured but not found. "
+                "Verify YTDLP_COOKIES_FILE or YTDLP_COOKIES_B64 settings."
             )
         opts["cookiefile"] = cookiefile
     if extra:
