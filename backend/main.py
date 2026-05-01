@@ -8,7 +8,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import pdf, image, convert, tools
+from routers import pdf, image, convert, tools, video
 
 app = FastAPI(
     title="AIO Toolkit API",
@@ -40,6 +40,7 @@ app.include_router(pdf.router, prefix="/api/pdf", tags=["PDF Tools"])
 app.include_router(image.router, prefix="/api/image", tags=["Image Tools"])
 app.include_router(convert.router, prefix="/api/convert", tags=["File Converters"])
 app.include_router(tools.router, prefix="/api/tools", tags=["Developer & Everyday Tools"])
+app.include_router(video.router, prefix="/api/video", tags=["Video Downloader"])
 
 
 @app.get("/")

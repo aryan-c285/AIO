@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: "Image Tools", href: "/image" },
   { label: "Converters", href: "/convert/word-to-pdf" },
   { label: "Dev Tools", href: "/tools/qr-generator" },
+  { label: "Video DL", href: "/tools/video-downloader" },
 ];
 
 export default function Navbar() {

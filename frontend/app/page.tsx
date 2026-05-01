@@ -36,6 +36,13 @@ const CATEGORIES = [
     icon: "⚡",
     href: "/tools/unit-converter",
   },
+  {
+    title: "Video Downloader",
+    description:
+      "Download videos and audio from YouTube, Instagram, Twitter/X and 1000+ sites.",
+    icon: "🎬",
+    href: "/tools/video-downloader",
+  },
 ];
 
 export default function HomePage() {
